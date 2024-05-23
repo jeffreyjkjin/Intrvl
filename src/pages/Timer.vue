@@ -1,0 +1,3 @@
+<template>
+    Timer Details
+</template>
