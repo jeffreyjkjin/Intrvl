@@ -23,25 +23,29 @@ const getTimer = async (): Promise<Timer> => {
 // get user input and update timer fields in db
 const updateTimer = async (event: Event, fieldName: string) => {
     const target: HTMLTextAreaElement = event.target as HTMLTextAreaElement;
-    let field;
+    let field: any;
     
-    // select field to update
-    if (fieldName === 'name') {
-        field = { name: target.value }
-    }
-    else if (fieldName === 'rounds') {
-        field = { rounds: Number(target.value) }
-    }
-    else {
-        return;
-    }
+    if (timer.value) {
+        // select field to update
+        if (fieldName === 'name') {
+            timer.value.name = target.value;
+            field = { name: target.value }
+        }
+        else if (fieldName === 'rounds') {
+            timer.value.rounds = Number(target.value);
+            field = { rounds: Number(target.value) }
+        }
+        else {
+            return;
+        }
 
-    // update field
-    await timers.timers.update(
-        Number(route.params.datetime),
-        field
-    )
-        .catch((err: any) => console.error(err));
+        // update field
+        await timers.timers.update(
+            Number(route.params.datetime),
+            field
+        )
+            .catch((err: any) => console.error(err));
+    }
 }
 
 // deletes timer from db
@@ -86,7 +90,7 @@ const updateInterval = async (event: Event, fieldName: string, index: number) =>
                 int.name = (event.target as HTMLTextAreaElement).value;                
                 break;
             case 'colour':
-                int.colour = (event.target as HTMLTextAreaElement).value;
+                int.colour = (event.target as HTMLSelectElement).value;
                 break;
             case 'length':
                 int.length = Number((event.target as HTMLTextAreaElement).value);
@@ -143,9 +147,14 @@ onBeforeMount(() => {
         <div>
             <input :value="timer.name" @input="updateTimer($event, 'name')" />
         </div>
+        <RouterLink :to="'/start/' + route.params.datetime">
+            Start
+        </RouterLink>
         <div>
             Total Time: {{ timer.intervals.reduce<number>((sum: number, int: Interval) => {
-                return sum + int.length;
+                const intTime: number = int.length * (int.repeat && timer !== undefined ? timer.rounds : 1); 
+
+                return sum + intTime;
             }, 0) }}
         </div>
         <div>
@@ -161,7 +170,11 @@ onBeforeMount(() => {
                     <input :value="interval.name" @input="updateInterval($event, 'name', index)" />
                 </div>
                 <div>
-                    {{ interval.colour }}
+                    Colour: <select :value="interval.colour" @input="updateInterval($event, 'colour', index)">
+                        <option>Colour 1</option>
+                        <option>Colour 2</option>
+                        <option>Colour 3</option>
+                    </select>
                 </div>
                 <div>
                     <input :value="interval.length" @input="updateInterval($event, 'length', index)" />
