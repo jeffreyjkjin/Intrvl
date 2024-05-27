@@ -20,15 +20,39 @@ const getTimer = async (): Promise<Timer> => {
     return t;
 }
 
+// get user input and update timer fields in db
+const updateTimer = async (event: Event, fieldName: string) => {
+    const target: HTMLTextAreaElement = event.target as HTMLTextAreaElement;
+    let field;
+    
+    // select field to update
+    if (fieldName === 'name') {
+        field = { name: target.value }
+    }
+    else if (fieldName === 'rounds') {
+        field = { rounds: Number(target.value) }
+    }
+    else {
+        return;
+    }
+
+    // update field
+    await timers.timers.update(
+        Number(route.params.datetime),
+        field
+    )
+        .catch((err: any) => console.error(err));
+}
+
 // creates a new empty interval and adds it to intervals array of timer in db 
 const createInterval = async () => {
     if (timer.value) {
         const i: Interval = {
             name: 'New Interval',
             colour: '',
-            length: 0,
+            length: 60,
             warning: '',
-            warningTime: 0,
+            warningTime: 10,
             sound: '',
             repeat: false
         }
@@ -39,6 +63,43 @@ const createInterval = async () => {
         await timers.timers.update(
             Number(route.params.datetime),
             { intervals: toRaw(timer.value.intervals) }
+        )
+            .catch((err: any) => console.error(err));
+    }
+}
+
+const updateInterval = async (event: Event, fieldName: string, index: number) => {
+    if (timer.value) {
+        const int: Interval = timer.value.intervals[index];
+
+        // update interval locally
+        switch (fieldName) {
+            case 'name':
+                int.name = (event.target as HTMLTextAreaElement).value;                
+                break;
+            case 'colour':
+                int.colour = (event.target as HTMLTextAreaElement).value;
+                break;
+            case 'length':
+                int.length = Number((event.target as HTMLTextAreaElement).value);
+                break;
+            case 'warning':
+                int.warning = (event.target as HTMLSelectElement).value;
+                break;
+            case 'warningTime':
+                int.warningTime = Number((event.target as HTMLTextAreaElement).value);
+                break;
+            case 'sound':
+                int.sound = (event.target as HTMLSelectElement).value;
+                break;
+            case 'repeat':
+                int.repeat = (event.target as HTMLFormElement).checked;
+        }
+
+        // update interval for timer in db
+        await timers.timers.update(
+                Number(route.params.datetime),
+                { intervals: toRaw(timer.value.intervals) }
         )
             .catch((err: any) => console.error(err));
     }
@@ -58,37 +119,47 @@ onBeforeMount(() => {
 
     <div v-if="timer !== undefined">
         <div>
-            {{ timer.name}}
+            <input :value="timer.name" @input="updateTimer($event, 'name')" />
         </div>
         <div>
-            Total Time:
+            Total Time: {{ timer.intervals.reduce<number>((sum: number, int: Interval) => {
+                return sum + int.length;
+            }, 0) }}
         </div>
         <div>
-            Rounds: {{ timer.rounds }}
+            Rounds: <input :value="timer.rounds" @input="updateTimer($event, 'rounds')" />
         </div>
         <div>
             Intervals:
-            <div v-for="interval in timer.intervals">
+            <div v-for="(interval, index) in timer.intervals">
                 <div>
-                    {{ interval.name }}
+                    <input :value="interval.name" @input="updateInterval($event, 'name', index)" />
                 </div>
                 <div>
                     {{ interval.colour }}
                 </div>
                 <div>
-                    {{ interval.length }}
+                    <input :value="interval.length" @input="updateInterval($event, 'length', index)" />
                 </div>
                 <div>
-                    {{ interval.warning }}
+                    Warning: <select :value="interval.sound" @input="updateInterval($event, 'sound', index)">
+                        <option>Sound 1</option>
+                        <option>Sound 2</option>
+                        <option>Sound 3</option>
+                    </select>
                 </div>
                 <div>
-                    {{ interval.warningTime }}
+                    Warning Time: <input :value="interval.warningTime" @input="updateInterval($event, 'warningTime', index)" />
                 </div>
                 <div>
-                    {{ interval.sound }}
+                    Sound: <select :value="interval.sound" @input="updateInterval($event, 'sound', index)">
+                        <option>Sound 1</option>
+                        <option>Sound 2</option>
+                        <option>Sound 3</option>
+                    </select>
                 </div>
                 <div>
-                    {{ interval.repeat }}
+                    Repeat: <input type="checkbox" :checked="interval.repeat" @change="updateInterval($event, 'repeat', index)" />
                 </div>
             </div>
         </div>
