@@ -3,13 +3,13 @@ import { onBeforeMount, ref } from 'vue'
 import { Router, useRouter } from 'vue-router'
 
 import PageHeader from '../components/PageHeader.vue'
-import { Timer, timers } from '../db'
+import { db, Timer } from '../utilities/db'
 
 const router: Router = useRouter();
-const timerArr = ref<Timer[]>([]);
+const timers = ref<Timer[]>([]);
 
 const getAllTimers = async (): Promise<Timer[]> => {
-    return timers.timers.toArray();
+    return db.timers.toArray();
 }
 
 const createTimer = () => {
@@ -23,15 +23,15 @@ const createTimer = () => {
     }
 
     // add timer to db and redirect to timer details page
-    timers.timers.add(t)
+    db.timers.add(t)
         .then(() => router.push(`/timer/${datetime}`))
         .catch((err: any) => console.log(err));
 }
 
 // grab all timers from db
-onBeforeMount( () => {
+onBeforeMount(() => {
     getAllTimers()
-        .then((res: Timer[]) => timerArr.value = res)
+        .then((res: Timer[]) => timers.value = res)
         .catch((err: any) => console.error(err));
 });
 </script>
@@ -39,8 +39,8 @@ onBeforeMount( () => {
 <template>
     <PageHeader />
 
-    <div v-if="timerArr.length">
-        <div v-for="timer in timerArr" :key="timer.datetime">
+    <div v-if="timers.length">
+        <div v-for="timer in timers" :key="timer.datetime">
             <RouterLink :to="'/timer/' + timer.datetime">
                 {{ timer.name }}
             </RouterLink>

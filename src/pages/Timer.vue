@@ -3,7 +3,7 @@ import { onBeforeMount, ref, toRaw } from 'vue'
 import { RouteLocationNormalizedLoaded, Router, useRoute, useRouter } from 'vue-router'
 
 import PageHeader from '../components/PageHeader.vue'
-import { Interval, Timer, timers } from '../db'
+import { db, Interval, Timer } from '../utilities/db'
 
 const route: RouteLocationNormalizedLoaded = useRoute();
 const router: Router = useRouter();
@@ -11,7 +11,7 @@ const timer = ref<Timer>();
 
 // gets timer with datetime param
 const getTimer = async (): Promise<Timer> => {
-    const t: Timer | undefined = await timers.timers.get(Number(route.params.datetime));
+    const t: Timer | undefined = await db.timers.get(Number(route.params.datetime));
 
     if (t === undefined) {
         throw Error();
@@ -21,7 +21,7 @@ const getTimer = async (): Promise<Timer> => {
 }
 
 // get user input and update timer fields in db
-const updateTimer = async (event: Event, fieldName: string) => {
+const updateTimer = (event: Event, fieldName: string) => {
     const target: HTMLTextAreaElement = event.target as HTMLTextAreaElement;
     let field: any;
     
@@ -40,7 +40,7 @@ const updateTimer = async (event: Event, fieldName: string) => {
         }
 
         // update field
-        await timers.timers.update(
+        db.timers.update(
             Number(route.params.datetime),
             field
         )
@@ -49,14 +49,14 @@ const updateTimer = async (event: Event, fieldName: string) => {
 }
 
 // deletes timer from db
-const deleteTimer = async () => {
-    await timers.timers.delete(Number(route.params.datetime))
+const deleteTimer = () => {
+    db.timers.delete(Number(route.params.datetime))
         .then(() => router.push('/'))
         .catch((err: any) => console.error(err));
 }
 
 // creates a new empty interval and adds it to intervals array of timer in db 
-const createInterval = async () => {
+const createInterval = () => {
     if (timer.value) {
         const i: Interval = {
             name: 'New Interval',
@@ -71,7 +71,7 @@ const createInterval = async () => {
         // insert interval into timer in db
         timer.value.intervals.push(i);
 
-        await timers.timers.update(
+        db.timers.update(
             Number(route.params.datetime),
             { intervals: toRaw(timer.value.intervals) }
         )
@@ -80,7 +80,7 @@ const createInterval = async () => {
 }
 
 // updates interval field
-const updateInterval = async (event: Event, fieldName: string, index: number) => {
+const updateInterval = (event: Event, fieldName: string, index: number) => {
     if (timer.value) {
         const int: Interval = timer.value.intervals[index];
 
@@ -109,7 +109,7 @@ const updateInterval = async (event: Event, fieldName: string, index: number) =>
         }
 
         // update interval for timer in db
-        await timers.timers.update(
+        db.timers.update(
                 Number(route.params.datetime),
                 { intervals: toRaw(timer.value.intervals) }
         )
@@ -118,12 +118,12 @@ const updateInterval = async (event: Event, fieldName: string, index: number) =>
 }
 
 // deletes interval from timer
-const deleteInterval = async (index: number) => {
+const deleteInterval = (index: number) => {
     if (timer.value) {
         timer.value.intervals.splice(index, 1);
 
         // remove interval from timer in db
-        await timers.timers.update(
+        db.timers.update(
             Number(route.params.datetime),
             { intervals: toRaw(timer.value.intervals) }
         )
