@@ -44,6 +44,13 @@ const updateTimer = async (event: Event, fieldName: string) => {
         .catch((err: any) => console.error(err));
 }
 
+// deletes timer from db
+const deleteTimer = async () => {
+    await timers.timers.delete(Number(route.params.datetime))
+        .then(() => router.push('/'))
+        .catch((err: any) => console.error(err));
+}
+
 // creates a new empty interval and adds it to intervals array of timer in db 
 const createInterval = async () => {
     if (timer.value) {
@@ -68,6 +75,7 @@ const createInterval = async () => {
     }
 }
 
+// updates interval field
 const updateInterval = async (event: Event, fieldName: string, index: number) => {
     if (timer.value) {
         const int: Interval = timer.value.intervals[index];
@@ -105,6 +113,20 @@ const updateInterval = async (event: Event, fieldName: string, index: number) =>
     }
 }
 
+// deletes interval from timer
+const deleteInterval = async (index: number) => {
+    if (timer.value) {
+        timer.value.intervals.splice(index, 1);
+
+        // remove interval from timer in db
+        await timers.timers.update(
+            Number(route.params.datetime),
+            { intervals: toRaw(timer.value.intervals) }
+        )
+            .catch((err: any) => console.error(err));
+    }
+}
+
 // grab timer from db with datetime param
 onBeforeMount(() => {
     getTimer()
@@ -129,6 +151,9 @@ onBeforeMount(() => {
         <div>
             Rounds: <input :value="timer.rounds" @input="updateTimer($event, 'rounds')" />
         </div>
+        <button @click="deleteTimer">
+            Delete Timer
+        </button>
         <div>
             Intervals:
             <div v-for="(interval, index) in timer.intervals">
@@ -161,6 +186,9 @@ onBeforeMount(() => {
                 <div>
                     Repeat: <input type="checkbox" :checked="interval.repeat" @change="updateInterval($event, 'repeat', index)" />
                 </div>
+                <button @click="deleteInterval(index)">
+                    Delete Interval
+                </button>
             </div>
         </div>
     </div>
