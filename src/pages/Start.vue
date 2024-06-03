@@ -3,6 +3,7 @@ import { onBeforeMount, ref } from 'vue'
 import { RouteLocationNormalizedLoaded, Router, useRoute, useRouter } from 'vue-router'
 
 import { db, Interval, Timer } from '../utilities/db'
+import { sounds } from '../utilities/sounds'
 
 const route: RouteLocationNormalizedLoaded = useRoute();
 const router: Router = useRouter();
@@ -46,6 +47,13 @@ const getTotalTime = (rounds: number): number => {
     return time;
 }
 
+// plays the specified sound from the sounds map
+const playSound = (name: string) => {
+    const sound: HTMLAudioElement = sounds.get(name) as HTMLAudioElement;
+    sound.currentTime = 0;
+    sound.play();
+}
+
 // sets an interval for the timer and clears it when the timer is done
 const startTimer = () => {
     const intervals: Interval[] = (timer.value as Timer).intervals;
@@ -58,12 +66,21 @@ const startTimer = () => {
     timerStarted.value = true;
 
     intervalID = setInterval(() => {
+        // stop timer countdown if paused
         if (timerPause.value) return;
 
         roundTime.value--;
         remainingTime.value--;
         
+        const intervalIndex: number = currentRound.value % numIntervals.value;
+
+        if (roundTime.value === intervals[intervalIndex].warningTime) 
+            playSound(intervals[intervalIndex].warning);
+
+        // when timer finishes
         if (!remainingTime.value) {
+            playSound(intervals[intervalIndex].sound);
+
             clearInterval(intervalID);
 
             timerStarted.value = false;
@@ -71,12 +88,34 @@ const startTimer = () => {
             return;
         };
             
+        // when interval finishes
         if (!roundTime.value) {
-            while (!intervals[++currentRound.value % numIntervals.value].repeat);
+            playSound(intervals[intervalIndex].sound);
 
+            // find next interval with repeat on
+            while (!intervals[++currentRound.value % numIntervals.value].repeat);
+            
             roundTime.value = intervals[currentRound.value % numIntervals.value].length;
         } 
     }, 1000);
+}
+
+// rewinds current round by one
+const rewind = () => {
+    if (currentRound.value === 0) return;
+
+    currentRound.value--;
+    remainingTime.value = getTotalTime(totalRounds.value - currentRound.value);
+    roundTime.value = (timer.value as Timer).intervals[currentRound.value % numIntervals.value].length;
+}
+
+// skips current round
+const forward = () => {
+    if (currentRound.value === totalRounds.value - 1) return;
+
+    currentRound.value++;
+    remainingTime.value = getTotalTime(totalRounds.value - currentRound.value);
+    roundTime.value = (timer.value as Timer).intervals[currentRound.value % numIntervals.value].length;
 }
 
 // grab timer from db with datetime param
@@ -105,15 +144,25 @@ onBeforeMount(() => {
                 Start
             </button>
         </div>
-        <div v-else-if="!timerPause">
-            <button @click="timerPause = true">
-                Pause
-            </button>
-        </div>
         <div v-else>
-            <button @click="timerPause = false">
-                Unpause
-            </button>
+            <div v-if="!timerPause">
+                <button @click="timerPause = true">
+                    Pause
+                </button>
+            </div>
+            <div v-else>
+                <button @click="timerPause = false">
+                    Unpause
+                </button>
+            </div>
+            <div>
+                <button @click="rewind">
+                    Rewind
+                </button>
+                <button @click="forward">
+                    Forward
+                </button>
+            </div>
         </div>
         <div v-if="numIntervals">
             {{ timer.intervals[currentRound % numIntervals].name }}: {{ roundTime }}
