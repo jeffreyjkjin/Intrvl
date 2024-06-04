@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { onBeforeMount, ref, toRaw } from 'vue'
 import { RouteLocationNormalizedLoaded, Router, useRoute, useRouter } from 'vue-router'
+import { VSwatches } from 'vue3-swatches'
+import 'vue3-swatches/dist/style.css'
 
 import PageHeader from '../components/PageHeader.vue'
 import { db, Interval, Timer } from '../utilities/db'
@@ -9,6 +11,25 @@ import { sounds } from '../utilities/sounds'
 const route: RouteLocationNormalizedLoaded = useRoute();
 const router: Router = useRouter();
 const timer = ref<Timer>();
+
+const swatches: string[] = [
+	'#ef4444',
+	'#f97316',
+	'#f59e0b',
+	'#eab308',
+	'#84cc16',
+	'#22c55e',
+	'#10b981',
+	'#14b8a6',
+	'#06b6d4',
+	'#0ea5e9',
+	'#3b82f6',
+	'#6366f1',
+	'#8b5cf6',
+	'#a855f7',
+	'#d946ef',
+	'#ec4899'
+];
 
 // gets timer with datetime param
 const getTimer = async (): Promise<Timer> => {
@@ -91,7 +112,7 @@ const updateInterval = (event: Event, fieldName: string, index: number) => {
                 int.name = (event.target as HTMLTextAreaElement).value;                
                 break;
             case 'colour':
-                int.colour = (event.target as HTMLSelectElement).value;
+                int.colour = event as any;
                 break;
             case 'length':
                 int.length = Number((event.target as HTMLTextAreaElement).value);
@@ -150,7 +171,6 @@ onBeforeMount(() => {
 
 <template>
     <PageHeader />
-
     <div v-if="timer !== undefined">
         <div>
             <input :value="timer.name" @input="updateTimer($event, 'name')" />
@@ -175,14 +195,8 @@ onBeforeMount(() => {
             Intervals:
             <div v-for="(interval, index) in timer.intervals">
                 <div>
+                    <VSwatches v-model="interval.colour" :swatches="swatches" @close="updateInterval($event, 'colour', index)" />
                     <input :value="interval.name" @input="updateInterval($event, 'name', index)" />
-                </div>
-                <div>
-                    Colour: <select :value="interval.colour" @input="updateInterval($event, 'colour', index)">
-                        <option>Colour 1</option>
-                        <option>Colour 2</option>
-                        <option>Colour 3</option>
-                    </select>
                 </div>
                 <div>
                     <input :value="interval.length" @input="updateInterval($event, 'length', index)" />
