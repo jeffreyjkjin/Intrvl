@@ -4,6 +4,7 @@ import { RouteLocationNormalizedLoaded, Router, useRoute, useRouter } from 'vue-
 
 import PageHeader from '../components/PageHeader.vue'
 import { db, Interval, Timer } from '../utilities/db'
+import { sounds } from '../utilities/sounds'
 
 const route: RouteLocationNormalizedLoaded = useRoute();
 const router: Router = useRouter();
@@ -62,9 +63,9 @@ const createInterval = () => {
             name: 'New Interval',
             colour: '',
             length: 60,
-            warning: '',
+            warning: 'None',
             warningTime: 10,
-            sound: '',
+            sound: 'None',
             repeat: false
         }
 
@@ -131,6 +132,13 @@ const deleteInterval = (index: number) => {
     }
 }
 
+// plays the specified sound from the sounds map
+const playSound = (name: string) => {
+    const sound: HTMLAudioElement = sounds.get(name) as HTMLAudioElement;
+    sound.currentTime = 0;
+    sound.play();
+}
+
 // grab timer from db with datetime param
 onBeforeMount(() => {
     getTimer()
@@ -180,21 +188,27 @@ onBeforeMount(() => {
                     <input :value="interval.length" @input="updateInterval($event, 'length', index)" />
                 </div>
                 <div>
-                    Warning: <select :value="interval.sound" @input="updateInterval($event, 'sound', index)">
-                        <option>Sound 1</option>
-                        <option>Sound 2</option>
-                        <option>Sound 3</option>
+                    Warning: <select :value="interval.warning" @input="updateInterval($event, 'warning', index)">
+                        <option v-for="sound in sounds">
+                            {{ sound[0] }}
+                        </option>
                     </select>
+                    <button @click="playSound(interval.warning)">
+                        Play
+                    </button>
                 </div>
                 <div>
                     Warning Time: <input :value="interval.warningTime" @input="updateInterval($event, 'warningTime', index)" />
                 </div>
                 <div>
                     Sound: <select :value="interval.sound" @input="updateInterval($event, 'sound', index)">
-                        <option>Sound 1</option>
-                        <option>Sound 2</option>
-                        <option>Sound 3</option>
+                        <option v-for="sound in sounds">
+                            {{ sound[0] }}
+                        </option>
                     </select>
+                    <button @click="playSound(interval.sound)">
+                        Play
+                    </button>
                 </div>
                 <div>
                     Repeat: <input type="checkbox" :checked="interval.repeat" @change="updateInterval($event, 'repeat', index)" />
@@ -204,9 +218,8 @@ onBeforeMount(() => {
                 </button>
             </div>
         </div>
+        <button @click="createInterval">
+            Add New Interval
+        </button>
     </div>
-
-    <button @click="createInterval">
-        Add New Interval
-    </button>
 </template>
