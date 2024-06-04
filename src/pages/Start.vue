@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onBeforeMount, ref } from 'vue'
+import { onBeforeMount, ref, watch } from 'vue'
 import { RouteLocationNormalizedLoaded, Router, useRoute, useRouter } from 'vue-router'
 
 import { db, Interval, Timer } from '../utilities/db'
@@ -11,15 +11,17 @@ const timer = ref<Timer>();
 
 let intervalID: number;
 
+const numIntervals = ref<number>(0);
+const totalRounds = ref<number>(0);
+
 const currentRound = ref<number>(0);
 const remainingTime = ref<number>(0);
 const roundTime = ref<number>(0);
 
-const numIntervals = ref<number>(0);
-const totalRounds = ref<number>(0);
-
 const timerPause = ref<boolean>(false);
 const timerStarted = ref<boolean>(false);
+
+const timerColour = ref<string>('');
 
 // gets timer with datetime param
 const getTimer = async (): Promise<Timer> => {
@@ -104,18 +106,26 @@ const startTimer = () => {
 const rewind = () => {
     if (currentRound.value === 0) return;
 
-    currentRound.value--;
+    const intervals: Interval[] = (timer.value as Timer).intervals;
+
+    // find next interval with repeat on
+    while (!intervals[--currentRound.value % numIntervals.value].repeat);
+    
     remainingTime.value = getTotalTime(totalRounds.value - currentRound.value);
-    roundTime.value = (timer.value as Timer).intervals[currentRound.value % numIntervals.value].length;
+    roundTime.value = intervals[currentRound.value % numIntervals.value].length;
 }
 
 // skips current round
 const forward = () => {
     if (currentRound.value === totalRounds.value - 1) return;
 
-    currentRound.value++;
+    const intervals: Interval[] = (timer.value as Timer).intervals;
+
+    // find next interval with repeat on
+    while (!intervals[++currentRound.value % numIntervals.value].repeat);
+    
     remainingTime.value = getTotalTime(totalRounds.value - currentRound.value);
-    roundTime.value = (timer.value as Timer).intervals[currentRound.value % numIntervals.value].length;
+    roundTime.value = intervals[currentRound.value % numIntervals.value].length;
 }
 
 // grab timer from db with datetime param
@@ -129,15 +139,29 @@ onBeforeMount(() => {
         })
         .then(() => {
             // initialize times
+            currentRound.value = 0;
             remainingTime.value = getTotalTime(totalRounds.value);
-            roundTime.value = (timer.value as Timer).intervals[currentRound.value].length;
+            roundTime.value = (timer.value as Timer).intervals[0].length;
+
+            // set initial colour
+            timerColour.value = (timer.value as Timer).intervals[0].colour;
         })
         .catch(() => router.push('/error'));
+});
+
+// update background colour when round changes
+watch(currentRound, () => {
+    timerColour.value = (timer.value as Timer).intervals[currentRound.value % numIntervals.value].colour;
 });
 </script>
 
 <template>
-    <div v-if="timer !== undefined">
+    <div v-if="timer !== undefined" :style="{ backgroundColor: timerColour }">
+        <div>
+            <RouterLink :to="'/timer/' + timer.datetime">
+                Back
+            </RouterLink>
+        </div>
         {{ timer.name }}
         <div v-if="!timerStarted">
             <button @click="startTimer">
