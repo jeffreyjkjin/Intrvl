@@ -2,7 +2,8 @@
 import { onBeforeMount, ref, watch } from 'vue'
 import { RouteLocationNormalizedLoaded, Router, useRoute, useRouter } from 'vue-router'
 
-import { db, Interval, Timer } from '../utilities/db'
+import { Interval, Timer } from '../utilities/db'
+import getTimer from '../utilities/getTimer'
 import { sounds } from '../utilities/sounds'
 
 const route: RouteLocationNormalizedLoaded = useRoute();
@@ -22,17 +23,6 @@ const timerPause = ref<boolean>(false);
 const timerStarted = ref<boolean>(false);
 
 const timerColour = ref<string>('');
-
-// gets timer with datetime param
-const getTimer = async (): Promise<Timer> => {
-    const t: Timer | undefined = await db.timers.get(Number(route.params.datetime));
-
-    if (t === undefined) {
-        throw Error();
-    }
-
-    return t;
-}
 
 // calculates total time of timer based on number of rounds remaining
 const getTotalTime = (rounds: number): number => {
@@ -130,7 +120,7 @@ const forward = () => {
 
 // grab timer from db with datetime param
 onBeforeMount(() => {
-    getTimer()
+    getTimer(Number(route.params.datetime))
         .then((res: Timer) => timer.value = res)
         .then(() => {
             // get number of intervals and rounds

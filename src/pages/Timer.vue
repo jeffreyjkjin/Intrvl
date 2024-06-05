@@ -6,6 +6,7 @@ import 'vue3-swatches/dist/style.css'
 
 import PageHeader from '../components/PageHeader.vue'
 import { db, Interval, Timer } from '../utilities/db'
+import getTimer from '../utilities/getTimer'
 import { sounds } from '../utilities/sounds'
 
 const route: RouteLocationNormalizedLoaded = useRoute();
@@ -30,17 +31,6 @@ const swatches: string[] = [
 	'#d946ef',
 	'#ec4899'
 ];
-
-// gets timer with datetime param
-const getTimer = async (): Promise<Timer> => {
-    const t: Timer | undefined = await db.timers.get(Number(route.params.datetime));
-
-    if (t === undefined) {
-        throw Error();
-    }
-
-    return t;
-}
 
 // get user input and update timer fields in db
 const updateTimer = (event: Event, fieldName: string) => {
@@ -82,7 +72,7 @@ const createInterval = () => {
     if (timer.value) {
         const i: Interval = {
             name: 'New Interval',
-            colour: '',
+            colour: '#3b82f6',
             length: 60,
             warning: 'None',
             warningTime: 10,
@@ -162,7 +152,7 @@ const playSound = (name: string) => {
 
 // grab timer from db with datetime param
 onBeforeMount(() => {
-    getTimer()
+    getTimer(Number(route.params.datetime))
         .then((res: Timer | undefined) => timer.value = res)
         .catch(() => router.push('/error'));
 });
