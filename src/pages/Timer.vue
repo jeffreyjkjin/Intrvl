@@ -7,6 +7,7 @@ import 'vue3-swatches/dist/style.css'
 import PageHeader from '../components/PageHeader.vue'
 import { db, Interval, Timer } from '../utilities/db'
 import getTimer from '../utilities/getTimer'
+import getTotalTime from '../utilities/getTotalTime'
 import playSound from '../utilities/playSound'
 import { sounds } from '../utilities/sounds'
 
@@ -163,11 +164,7 @@ onBeforeMount(() => {
             Start
         </RouterLink>
         <div>
-            Total Time: {{ timer.intervals.reduce<number>((sum: number, int: Interval) => {
-                const intTime: number = int.length * (int.repeat && timer !== undefined ? timer.rounds : 1); 
-
-                return sum + intTime;
-            }, 0) }}
+            Total Time: {{ getTotalTime(timer) }}
         </div>
         <div>
             Rounds: <input :value="timer.rounds" @input="updateTimer($event, 'rounds')" />

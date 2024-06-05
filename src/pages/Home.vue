@@ -4,6 +4,7 @@ import { Router, useRouter } from 'vue-router'
 
 import PageHeader from '../components/PageHeader.vue'
 import { db, Timer } from '../utilities/db'
+import getTotalTime from '../utilities/getTotalTime'
 
 const router: Router = useRouter();
 const timers = ref<Timer[]>([]);
@@ -18,7 +19,7 @@ const createTimer = () => {
     const t: Timer = {
         datetime: datetime,
         name: `New Timer`,
-        rounds: 0,
+        rounds: 1,
         intervals: []         
     }
 
@@ -42,7 +43,7 @@ onBeforeMount(() => {
     <div v-if="timers.length">
         <div v-for="timer in timers" :key="timer.datetime">
             <RouterLink :to="'/timer/' + timer.datetime">
-                {{ timer.name }}
+                {{ timer.name }}: {{ getTotalTime(timer) }}
             </RouterLink>
         </div>
     </div>
