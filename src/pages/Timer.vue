@@ -7,6 +7,7 @@ import 'vue3-swatches/dist/style.css'
 import PageHeader from '../components/PageHeader.vue'
 import { db, Interval, Timer } from '../utilities/db'
 import getTimer from '../utilities/getTimer'
+import playSound from '../utilities/playSound'
 import { sounds } from '../utilities/sounds'
 
 const route: RouteLocationNormalizedLoaded = useRoute();
@@ -141,13 +142,6 @@ const deleteInterval = (index: number) => {
         )
             .catch((err: any) => console.error(err));
     }
-}
-
-// plays the specified sound from the sounds map
-const playSound = (name: string) => {
-    const sound: HTMLAudioElement = sounds.get(name) as HTMLAudioElement;
-    sound.currentTime = 0;
-    sound.play();
 }
 
 // grab timer from db with datetime param

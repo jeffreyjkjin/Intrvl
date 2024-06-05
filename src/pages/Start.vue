@@ -4,7 +4,7 @@ import { RouteLocationNormalizedLoaded, Router, useRoute, useRouter } from 'vue-
 
 import { Interval, Timer } from '../utilities/db'
 import getTimer from '../utilities/getTimer'
-import { sounds } from '../utilities/sounds'
+import playSound from '../utilities/playSound'
 
 const route: RouteLocationNormalizedLoaded = useRoute();
 const router: Router = useRouter();
@@ -37,13 +37,6 @@ const getTotalTime = (rounds: number): number => {
     }
 
     return time;
-}
-
-// plays the specified sound from the sounds map
-const playSound = (name: string) => {
-    const sound: HTMLAudioElement = sounds.get(name) as HTMLAudioElement;
-    sound.currentTime = 0;
-    sound.play();
 }
 
 // sets an interval for the timer and clears it when the timer is done
