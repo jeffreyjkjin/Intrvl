@@ -78,8 +78,10 @@ const startTimer = () => {
             playSound(intervals[intervalIndex].sound);
 
             // find next interval with repeat on
-            while (!intervals[++currentRound.value % numIntervals.value].repeat && currentRound.value < totalRounds.value);
-            
+            do {
+                currentRound.value++;
+            } while (currentRound.value >= numIntervals.value && !intervals[currentRound.value % numIntervals.value].repeat);
+
             roundTime.value = intervals[currentRound.value % numIntervals.value].length;
         } 
     }, 1000);
@@ -93,8 +95,11 @@ const rewind = () => {
     playSound(intervals[currentRound.value % numIntervals.value].sound);
 
     // find last interval with repeat on
-    while (!intervals[--currentRound.value % numIntervals.value].repeat && currentRound.value > 0);
-    
+    // while (!intervals[--currentRound.value % numIntervals.value].repeat && currentRound.value >= totalRounds.value);
+    do {
+        currentRound.value--;
+    } while (currentRound.value >= numIntervals.value && !intervals[currentRound.value % numIntervals.value].repeat);  
+
     remainingTime.value = getTotalTime(totalRounds.value - currentRound.value);
     roundTime.value = intervals[currentRound.value % numIntervals.value].length;
 }
@@ -107,7 +112,9 @@ const forward = () => {
     playSound(intervals[currentRound.value % numIntervals.value].sound);
 
     // find next interval with repeat on
-    while (!intervals[++currentRound.value % numIntervals.value].repeat && currentRound.value < totalRounds.value);
+    do {
+        currentRound.value++;
+    } while (currentRound.value >= numIntervals.value && !intervals[currentRound.value % numIntervals.value].repeat);
     
     remainingTime.value = getTotalTime(totalRounds.value - currentRound.value);
     roundTime.value = intervals[currentRound.value % numIntervals.value].length;
