@@ -7,13 +7,13 @@ import formatTime from '../utilities/formatTime'
 defineProps<{
     seconds: number,
     ms: number,
-    interval: Interval | undefined
+    interval: Interval
 }>();
 
 </script>
 
 <template>
-    <div v-if="interval !== undefined" class="w-min relative">
+    <div class="w-min relative">
             <CircleProgress
                 :size="360" 
                 :border-width="8"

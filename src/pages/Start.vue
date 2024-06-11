@@ -1,10 +1,11 @@
 <script setup lang="ts">
+import Clock from '../icons/clock.svg'
+import Close from '../icons/close.svg'
+import Forward from '../icons/forward.svg'
+import Pause from '../icons/pause.svg'
+import Play from '../icons/play.svg'
+import Replay from '../icons/replay.svg'
 import { onBeforeMount, ref, watch } from 'vue'
-import Close from 'vue-material-design-icons/Close.vue'
-import Pause from 'vue-material-design-icons/Pause.vue'
-import PlayOutline from 'vue-material-design-icons/PlayOutline.vue'
-import Replay from 'vue-material-design-icons/Replay.vue'
-import TimerOutline from 'vue-material-design-icons/TimerOutline.vue'
 import { RouteLocationNormalizedLoaded, Router, useRoute, useRouter } from 'vue-router'
 
 import TimerProgress from '../components/TimerProgress.vue'
@@ -192,31 +193,31 @@ watch(currentRound, () => {
     >
         <div class="w-full relative">
             <RouterLink class="absolute top-3 left-3" :to="'/timer/' + timer.datetime">
-                <Close :size="48" />
+                <Close class="h-12 w-12 fill-white" />
             </RouterLink>
             <div class="w-2/3 text-center text-3xl absolute top-4 left-1/2 -translate-x-1/2">
                 {{ timer.name }}
             </div>
         </div>
         <div class="flex flex-col gap-11 w-full absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
-            <div class="flex place-content-center">
+            <div v-if="timer.intervals[currentRound % numIntervals]" class="flex place-content-center">
                 <TimerProgress :seconds="roundTime" :ms="ms" :interval="timer.intervals[currentRound % numIntervals]" />
             </div>
-            <div class="flex place-content-center gap-6" :style="{ color: timerColour }">
+            <div class="flex place-content-center gap-6" :style="{ fill: timerColour }">
                 <button class="place-self-center p-4 bg-white rounded-full" @click="rewind">
-                    <Replay :size="36" />
+                    <Replay class="h-8 w-8" :style="{ fill: timerColour }" />
                 </button>
-                <button class="p-3 bg-white rounded-full" @click="!timerStarted ? startTimer() : timerPause = !timerPause">
-                    <PlayOutline :size="64" v-if="!timerStarted || timerPause" />
-                    <Pause :size="64" v-else />
+                <button class="p-4 bg-white rounded-full" @click="!timerStarted ? startTimer() : timerPause = !timerPause">
+                    <Play class="h-12 w-12" :style="{ fill: timerColour }" v-if="!timerStarted || timerPause"  />
+                    <Pause class="h-12 w-12" :style="{ fill: timerColour }" v-else />
                 </button>
-                <button class="place-self-center p-4 bg-white rounded-full scale-x-[-1]" @click="forward">
-                    <Replay :size="36" />
+                <button class="place-self-center p-4 bg-white rounded-full" @click="forward">
+                    <Forward class="h-8 w-8" :style="{ fill: timerColour }" />
                 </button>
             </div>
         </div>
         <div class="flex w-full place-content-center text-2xl gap-2 absolute bottom-4">
-            <TimerOutline :size="32" />
+            <Clock class="w-8 h-8 fill-white" />
             Time Remaining: {{ formatTime(remainingTime) }}
         </div>
     </div>
