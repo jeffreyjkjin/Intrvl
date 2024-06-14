@@ -2,6 +2,7 @@
 import PlayCircle from '../icons/playcircle.svg'
 import Trash from '../icons/trash.svg'
 import { onBeforeMount, ref, toRaw } from 'vue'
+import { VueDraggable } from 'vue-draggable-plus'
 import { RouteLocationNormalizedLoaded, Router, useRoute, useRouter } from 'vue-router'
 
 import IntervalAccordion from '../components/IntervalAccordion.vue'
@@ -17,30 +18,30 @@ const timer = ref<Timer>();
 
 // get user input and update timer fields in db
 const updateTimer = (event: Event, fieldName: string) => {
+    if (!timer.value) return;
+    
     const target: HTMLTextAreaElement = event.target as HTMLTextAreaElement;
     let field: any;
     
-    if (timer.value) {
-        // select field to update
-        if (fieldName === 'name') {
-            timer.value.name = target.value;
-            field = { name: target.value }
-        }
-        else if (fieldName === 'rounds') {
-            timer.value.rounds = Number(target.value);
-            field = { rounds: Number(target.value) }
-        }
-        else {
-            return;
-        }
-
-        // update field
-        db.timers.update(
-            Number(route.params.datetime),
-            field
-        )
-            .catch((err: any) => console.error(err));
+    // select field to update
+    if (fieldName === 'name') {
+        timer.value.name = target.value;
+        field = { name: target.value }
     }
+    else if (fieldName === 'rounds') {
+        timer.value.rounds = Number(target.value);
+        field = { rounds: Number(target.value) }
+    }
+    else {
+        return;
+    }
+
+    // update field
+    db.timers.update(
+        Number(route.params.datetime),
+        field
+    )
+        .catch((err: any) => console.error(err));
 }
 
 // deletes timer from db
@@ -52,26 +53,37 @@ const deleteTimer = () => {
 
 // creates a new empty interval and adds it to intervals array of timer in db 
 const createInterval = () => {
-    if (timer.value) {
-        const i: Interval = {
-            name: 'New Interval',
-            colour: '#3b82f6',
-            length: 60,
-            warning: 'None',
-            warningTime: 10,
-            sound: 'None',
-            repeat: false
-        }
+    if (!timer.value) return;
 
-        // insert interval into timer in db
-        timer.value.intervals.push(i);
-
-        db.timers.update(
-            Number(route.params.datetime),
-            { intervals: toRaw(timer.value.intervals) }
-        )
-            .catch((err: any) => console.error(err));
+    const i: Interval = {
+        name: 'New Interval',
+        colour: '#3b82f6',
+        length: 60,
+        warning: 'None',
+        warningTime: 10,
+        sound: 'None',
+        repeat: false
     }
+
+    // insert interval into timer in db
+    timer.value.intervals.push(i);
+
+    db.timers.update(
+        Number(route.params.datetime),
+        { intervals: toRaw(timer.value.intervals) }
+    )
+        .catch((err: any) => console.error(err));
+}
+
+// updates order of intervals for timer
+const moveInterval = () => {
+    if (!timer.value) return;
+
+    db.timers.update(
+        Number(route.params.datetime),
+        { intervals: timer.value.intervals.map((int: Interval) => toRaw(int)) }
+    )
+        .catch((err: any) => console.error(err));    
 }
 
 // grab timer from db with datetime param
@@ -80,7 +92,6 @@ onBeforeMount(() => {
         .then((res: Timer | undefined) => timer.value = res)
         .catch(() => router.push('/error'));
 });
-
 </script>
 
 <template>
@@ -117,9 +128,14 @@ onBeforeMount(() => {
             </div>
         </div>
         <div>
-            <div class="flex flex-col" v-for="(interval, index) in timer.intervals">
-                <IntervalAccordion :timer="timer" :index="index" />
-            </div>
+            <VueDraggable
+                v-model="timer.intervals"
+                :onUpdate="moveInterval"
+            >
+                <div class="flex flex-col" v-for="index in timer.intervals.length">
+                    <IntervalAccordion :timer="timer" :index="index-1" />
+                </div>
+            </VueDraggable>
         </div>
         <button @click="createInterval">
             Add New Interval

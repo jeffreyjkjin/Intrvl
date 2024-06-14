@@ -12,6 +12,7 @@
     "dexie": "^4.0.4",
     "vite-svg-loader": "^5.1.0",
     "vue": "^3.4.21",
+    "vue-draggable-plus": "^0.5.0",
     "vue-router": "^4.3.2",
     "vue3-circle-progress": "^1.0.7",
     "vue3-swatches": "^1.2.4"
