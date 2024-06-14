@@ -5,6 +5,7 @@ import { onBeforeMount, ref, toRaw } from 'vue'
 import { VueDraggable } from 'vue-draggable-plus'
 import { RouteLocationNormalizedLoaded, Router, useRoute, useRouter } from 'vue-router'
 
+import AddButton from '../components/AddButton.vue'
 import IntervalAccordion from '../components/IntervalAccordion.vue'
 import PageHeader from '../components/PageHeader.vue'
 import { db, Interval, Timer } from '../utilities/db'
@@ -15,6 +16,8 @@ import getTotalTime from '../utilities/getTotalTime'
 const route: RouteLocationNormalizedLoaded = useRoute();
 const router: Router = useRouter();
 const timer = ref<Timer>();
+
+const openAccordions = ref<Map<number, boolean>>(new Map<number, boolean>());
 
 // get user input and update timer fields in db
 const updateTimer = (event: Event, fieldName: string) => {
@@ -62,7 +65,8 @@ const createInterval = () => {
         warning: 'None',
         warningTime: 10,
         sound: 'None',
-        repeat: false
+        repeat: false,
+        datetime: Date.now()
     }
 
     // insert interval into timer in db
@@ -90,6 +94,14 @@ const moveInterval = () => {
 onBeforeMount(() => {
     getTimer(Number(route.params.datetime))
         .then((res: Timer | undefined) => timer.value = res)
+        .then(() => {
+            if (!timer.value) return;
+
+            // initialize openAccordion map
+            timer.value.intervals.forEach((int: Interval) => {
+                openAccordions.value.set(int.datetime, false);
+            });
+        })
         .catch(() => router.push('/error'));
 });
 </script>
@@ -127,18 +139,16 @@ onBeforeMount(() => {
                 </button>
             </div>
         </div>
-        <div>
+        <div class="pb-20">
             <VueDraggable
                 v-model="timer.intervals"
                 :onUpdate="moveInterval"
             >
                 <div class="flex flex-col" v-for="index in timer.intervals.length">
-                    <IntervalAccordion :timer="timer" :index="index-1" />
+                    <IntervalAccordion :timer="timer" :index="index-1" :openAccordions="openAccordions" />
                 </div>
             </VueDraggable>
         </div>
-        <button @click="createInterval">
-            Add New Interval
-        </button>
+        <AddButton @click="createInterval" />
     </div>
 </template>
