@@ -9,6 +9,7 @@ export interface Interval {
     warningTime: number;
     sound: string;
     repeat: boolean;
+    datetime: number;
 }
 
 // stores data for an interval timer
