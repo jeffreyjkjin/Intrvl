@@ -6,7 +6,7 @@ import ChevronUp from '../icons/chevronup.svg'
 import Drag from '../icons/drag.svg'
 import Sound from '../icons/sound.svg'
 import Trash from '../icons/trash.svg'
-import { ref, toRaw } from 'vue'
+import { toRaw } from 'vue'
 import { VSwatches } from 'vue3-swatches'
 import 'vue3-swatches/dist/style.css'
 
@@ -16,7 +16,8 @@ import { sounds } from '../utilities/sounds'
 
 const props = defineProps<{
     timer: Timer,
-    index: number
+    index: number,
+    openAccordions: Map<number, boolean>
 }>();
 
 const swatches: string[] = [
@@ -37,8 +38,6 @@ const swatches: string[] = [
 	'#d946ef',
 	'#ec4899'
 ];
-
-const accordionOpen = ref<boolean>(false);
 
 // updates interval field
 const updateInterval = (event: Event, fieldName: string, index: number) => {
@@ -87,6 +86,13 @@ const deleteInterval = (index: number) => {
     )
         .catch((err: any) => console.error(err));
 }
+
+// inverts openAccordion entry for the current interval 
+const toggleAccordion = () => {
+    const int: Interval = props.timer.intervals[props.index];
+
+    props.openAccordions.set(int.datetime, !props.openAccordions.get(int.datetime) || false);
+}
 </script>
 
 <template>
@@ -113,13 +119,16 @@ const deleteInterval = (index: number) => {
                     :value="props.timer.intervals[index].length" 
                     @input="updateInterval($event, 'length', index)" 
                 />
-                <button class="opacity-40" @click="accordionOpen = !accordionOpen">
-                    <ChevronDown class="w-6 h-6 fill-black" v-if="!accordionOpen" />
+                <button class="opacity-40" @click="toggleAccordion">
+                    <ChevronDown 
+                        class="w-6 h-6 fill-black" 
+                        v-if="!openAccordions.get(timer.intervals[index].datetime)" 
+                    />
                     <ChevronUp class="w-6 h-6 fill-black" v-else />
                 </button>
             </div>
         </div>
-        <div class="flex flex-col gap-5 text-xl px-10 pb-6" v-show="accordionOpen" >
+        <div class="flex flex-col gap-5 text-xl px-10 pb-6" v-show="openAccordions.get(timer.intervals[index].datetime)" >
             <div class="flex justify-between items-center">
                 Warning
                 <div class="flex items-center gap-3">
