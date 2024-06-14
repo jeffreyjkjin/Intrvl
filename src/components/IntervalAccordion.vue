@@ -6,9 +6,8 @@ import ChevronUp from '../icons/chevronup.svg'
 import Drag from '../icons/drag.svg'
 import Sound from '../icons/sound.svg'
 import Trash from '../icons/trash.svg'
-import { toRaw } from 'vue'
+import { ref, toRaw } from 'vue'
 import { VSwatches } from 'vue3-swatches'
-// import VSwatches from '../swatches/VSwatches.vue'
 import 'vue3-swatches/dist/style.css'
 
 import { db, Interval, Timer } from '../utilities/db'
@@ -39,6 +38,8 @@ const swatches: string[] = [
 	'#ec4899'
 ];
 
+const accordionOpen = ref<boolean>(false);
+
 // updates interval field
 const updateInterval = (event: Event, fieldName: string, index: number) => {
     const int: Interval = props.timer.intervals[index];
@@ -55,13 +56,13 @@ const updateInterval = (event: Event, fieldName: string, index: number) => {
             int.length = Number((event.target as HTMLTextAreaElement).value);
             break;
         case 'warning':
-            int.warning = (event.target as HTMLSelectElement).value;
+            int.warning = toRaw((event.target as HTMLSelectElement).value);
             break;
         case 'warningTime':
             int.warningTime = Number((event.target as HTMLTextAreaElement).value);
             break;
         case 'sound':
-            int.sound = (event.target as HTMLSelectElement).value;
+            int.sound = toRaw((event.target as HTMLSelectElement).value);
             break;
         case 'repeat':
             int.repeat = !props.timer.intervals[index].repeat;
@@ -69,8 +70,8 @@ const updateInterval = (event: Event, fieldName: string, index: number) => {
 
     // update interval for timer in db
     db.timers.update(
-            Number(props.timer.datetime),
-            { intervals: toRaw(props.timer.intervals) }
+        Number(props.timer.datetime),
+        { intervals: props.timer.intervals.map((int: Interval) => toRaw(int)) }
     )
         .catch((err: any) => console.error(err));
 }
@@ -101,7 +102,7 @@ const deleteInterval = (index: number) => {
                     swatch-size="20"
                 />
                 <input 
-                    class="font-bold text-xl bg-stone-100 w-40" 
+                    class="font-bold text-xl bg-stone-100 w-40 ml-2" 
                     :value="props.timer.intervals[index].name" 
                     @input="updateInterval($event, 'name', index)" 
                 />
@@ -112,13 +113,13 @@ const deleteInterval = (index: number) => {
                     :value="props.timer.intervals[index].length" 
                     @input="updateInterval($event, 'length', index)" 
                 />
-                <button class="opacity-40">
-                    <ChevronDown class="w-6 h-6 fill-black" />
-                    <!-- <ChevronUp class="w-6 h-6 fill-black" /> -->
+                <button class="opacity-40" @click="accordionOpen = !accordionOpen">
+                    <ChevronDown class="w-6 h-6 fill-black" v-if="!accordionOpen" />
+                    <ChevronUp class="w-6 h-6 fill-black" v-else />
                 </button>
             </div>
         </div>
-        <div class="flex flex-col gap-5 text-xl px-10 pb-6">
+        <div class="flex flex-col gap-5 text-xl px-10 pb-6" v-show="accordionOpen" >
             <div class="flex justify-between items-center">
                 Warning
                 <div class="flex items-center gap-3">
