@@ -44,6 +44,11 @@ const updateTimer = (event: Event, fieldName: string) => {
         Number(route.params.datetime),
         field
     )
+        .then(() => {
+            if (!timer.value) return;
+
+            document.title = `Timer - ${timer.value.name}`;
+        })
         .catch((err: any) => console.error(err));
 }
 
@@ -101,6 +106,8 @@ onBeforeMount(() => {
             timer.value.intervals.forEach((int: Interval) => {
                 openAccordions.value.set(int.datetime, false);
             });
+
+            document.title = `Timer - ${timer.value.name}`;
         })
         .catch(() => router.push('/error'));
 });
