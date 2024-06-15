@@ -39,7 +39,9 @@ const timerColour = ref<string>('');
 
 // calculates total time of timer based on number of rounds remaining
 const getTotalTime = (rounds: number): number => {
-    const intervals: Interval[] = (timer.value as Timer).intervals; 
+    if (!timer.value) return 0;
+
+    const intervals: Interval[] = timer.value.intervals; 
     let time: number = 0;
 
     for (let i = 0; i < rounds; i++) {
@@ -53,6 +55,8 @@ const getTotalTime = (rounds: number): number => {
 }
 
 const runInterval = () => {
+    if (!timer.value) return;
+
     // if timer ended
     if (!timerStarted.value) return;
 
@@ -78,7 +82,7 @@ const runInterval = () => {
     roundTime.value--;
     remainingTime.value--;
 
-    const intervals: Interval[] = (timer.value as Timer).intervals;
+    const intervals: Interval[] = timer.value.intervals;
     const intervalIndex: number = currentRound.value % numIntervals.value;
 
     // play warning sound
@@ -110,11 +114,13 @@ const runInterval = () => {
 
 // sets an interval for the timer and clears it when the timer is done
 const startTimer = () => {
+    if (!timer.value) return;
+
     // set up timer
     currentRound.value = 0;
     ms.value = 0;
     remainingTime.value = getTotalTime(totalRounds.value);
-    roundTime.value = (timer.value as Timer).intervals[0].length;
+    roundTime.value = timer.value.intervals[0].length;
 
     timerStarted.value = true;
 
@@ -125,10 +131,12 @@ const startTimer = () => {
 
 // rewinds current round by one
 const rewind = () => {
+    if (!timer.value) return;
+
     // if current round is the first one
     if (currentRound.value === 0) return;
 
-    const intervals: Interval[] = (timer.value as Timer).intervals;
+    const intervals: Interval[] = timer.value.intervals;
     playSound(intervals[currentRound.value % numIntervals.value].sound);
 
     // find last interval with repeat on
@@ -142,10 +150,12 @@ const rewind = () => {
 
 // skips current round
 const forward = () => {
+    if (!timer.value) return;
+
     // if current round is the last one
     if (currentRound.value === totalRounds.value - 1) return;
 
-    const intervals: Interval[] = (timer.value as Timer).intervals;
+    const intervals: Interval[] = timer.value.intervals;
     playSound(intervals[currentRound.value % numIntervals.value].sound);
 
     // find next interval with repeat on
@@ -162,26 +172,41 @@ onBeforeMount(() => {
     getTimer(Number(route.params.datetime))
         .then((res: Timer) => timer.value = res)
         .then(() => {
+            if (!timer.value) return;
+
             // get number of intervals and rounds
-            numIntervals.value = (timer.value as Timer).intervals.length;
-            totalRounds.value = (timer.value as Timer).rounds * numIntervals.value;
+            numIntervals.value = timer.value.intervals.length;
+            totalRounds.value = timer.value.rounds * numIntervals.value;
         })
         .then(() => {
+            if (!timer.value) return;
+
             // initialize timer values
             currentRound.value = 0;
             ms.value = 0;
             remainingTime.value = getTotalTime(totalRounds.value);
-            roundTime.value = (timer.value as Timer).intervals[0].length;
+            roundTime.value = timer.value.intervals[0].length;
 
             // set initial colour
-            timerColour.value = (timer.value as Timer).intervals[0].colour;
+            timerColour.value = timer.value.intervals[0].colour;
         })
         .catch(() => router.push('/error'));
 });
 
 // update background colour when round changes
 watch(currentRound, () => {
-    timerColour.value = (timer.value as Timer).intervals[currentRound.value % numIntervals.value].colour;
+    if (!timer.value) return;
+
+    timerColour.value = timer.value.intervals[currentRound.value % numIntervals.value].colour;
+});
+
+// set page title
+watch(roundTime, () => {
+    if (!timer.value) return;
+
+    const int: Interval = timer.value.intervals[currentRound.value % numIntervals.value];
+
+    document.title = `${int.name} - ${formatTime(roundTime.value)}`;
 });
 </script>
 
