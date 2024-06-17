@@ -2,7 +2,9 @@
 import { onBeforeMount, ref } from 'vue'
 import { Router, useRouter } from 'vue-router'
 
+import AddButton from '../components/AddButton.vue'
 import PageHeader from '../components/PageHeader.vue'
+import TimerCard from '../components/TimerCard.vue'
 import { db, Timer } from '../utilities/db'
 import getTotalTime from '../utilities/getTotalTime'
 
@@ -35,23 +37,25 @@ onBeforeMount(() => {
         .then((res: Timer[]) => timers.value = res)
         .catch((err: any) => console.error(err));
 });
+
+// set page title
+onBeforeMount(() => document.title = 'Home');
 </script>
 
 <template>
     <PageHeader />
-
-    <div v-if="timers.length">
-        <div v-for="timer in timers" :key="timer.datetime">
-            <RouterLink :to="'/timer/' + timer.datetime">
-                {{ timer.name }}: {{ getTotalTime(timer) }}
-            </RouterLink>
+    <div class="pb-20 pt-2 font-roboto">
+        <div v-if="timers.length">
+            <div v-for="timer in timers" :key="timer.datetime">
+                <TimerCard :timer="timer" />
+            </div>
+        </div>
+        <div class="m-4 text-xl" v-else>
+            There are currently no timers.
+            <p class="text-blue-400 inline" @click="createTimer">
+                Click here to create a new timer.
+            </p>
         </div>
     </div>
-    <div v-else>
-        No timers found
-    </div>
-
-    <button @click="createTimer">
-        Create New Timer
-    </button>
+    <AddButton @click="createTimer" />
 </template>
