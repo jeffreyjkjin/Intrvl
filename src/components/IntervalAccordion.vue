@@ -11,6 +11,7 @@ import { VSwatches } from 'vue3-swatches'
 import 'vue3-swatches/dist/style.css'
 
 import { db, Interval, Timer } from '../utilities/db'
+import formatTime from '../utilities/formatTime'
 import playSound from '../utilities/playSound'
 import { sounds } from '../utilities/sounds'
 
@@ -52,13 +53,43 @@ const updateInterval = (event: Event, fieldName: string, index: number) => {
             int.colour = event as any;
             break;
         case 'length':
-            int.length = Number((event.target as HTMLTextAreaElement).value);
+            if (!/^\d*(:\d*)?$/g.test((event.target as HTMLTextAreaElement).value)) {
+                // invalid input
+                int.length = 0;
+            }
+            else if ((event.target as HTMLTextAreaElement).value.includes(':')) {
+                // minutes and seconds
+                let time: number = 0;
+                time += Number((event.target as HTMLTextAreaElement).value.match(/.*?(?=:)/)) * 60;
+                time += Number((event.target as HTMLTextAreaElement).value.match(/(?<=:).*/));
+
+                int.length = time;
+            }
+            else {
+                // only seconds
+                int.length = Number((event.target as HTMLTextAreaElement).value);
+            }
             break;
         case 'warning':
             int.warning = toRaw((event.target as HTMLSelectElement).value);
             break;
         case 'warningTime':
-            int.warningTime = Number((event.target as HTMLTextAreaElement).value);
+            if (!/^\d*(:\d*)?$/g.test((event.target as HTMLTextAreaElement).value)) {
+                // invalid input
+                int.warningTime = 0;
+            }
+            else if ((event.target as HTMLTextAreaElement).value.includes(':')) {
+                // minutes and seconds
+                let time: number = 0;
+                time += Number((event.target as HTMLTextAreaElement).value.match(/.*?(?=:)/)) * 60;
+                time += Number((event.target as HTMLTextAreaElement).value.match(/(?<=:).*/));
+
+                int.warningTime = time;
+            }
+            else {
+                // only seconds
+                int.warningTime = Number((event.target as HTMLTextAreaElement).value);
+            }
             break;
         case 'sound':
             int.sound = toRaw((event.target as HTMLSelectElement).value);
@@ -103,9 +134,10 @@ const toggleAccordion = () => {
                 <VSwatches
                     class="mt-[6.4px]"
                     v-model="props.timer.intervals[index].colour" 
-                    :swatches="swatches" @close="updateInterval($event, 'colour', index)"
+                    :swatches="swatches" 
                     :trigger-style="{ width: '20px', height: '20px', borderRadius: '24%' }"
                     swatch-size="20"
+                    @close="updateInterval($event, 'colour', index)"
                 />
                 <input 
                     class="font-bold text-xl bg-stone-100 w-40 ml-2" 
@@ -116,8 +148,8 @@ const toggleAccordion = () => {
             <div class="flex items-center gap-1">
                 <input 
                     class="bg-stone-100 text-xl text-right w-20" 
-                    :value="props.timer.intervals[index].length" 
-                    @input="updateInterval($event, 'length', index)" 
+                    :value="formatTime(props.timer.intervals[index].length)" 
+                    @change="updateInterval($event, 'length', index)" 
                 />
                 <button class="opacity-40" @click="toggleAccordion">
                     <ChevronDown 
@@ -146,8 +178,8 @@ const toggleAccordion = () => {
                 Warning Time 
                 <input 
                     class="w-20 text-right bg-stone-100"
-                    :value="props.timer.intervals[index].warningTime" 
-                    @input="updateInterval($event, 'warningTime', index)" 
+                    :value="formatTime(props.timer.intervals[index].warningTime)" 
+                    @change="updateInterval($event, 'warningTime', index)" 
                 />
             </div>
             <div class="flex justify-between items-center">
