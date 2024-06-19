@@ -7,6 +7,7 @@ import Drag from '../icons/drag.svg'
 import Sound from '../icons/sound.svg'
 import Trash from '../icons/trash.svg'
 import { toRaw } from 'vue'
+import { Collapse } from 'vue-collapsed'
 import { VSwatches } from 'vue3-swatches'
 import 'vue3-swatches/dist/style.css'
 
@@ -160,54 +161,64 @@ const toggleAccordion = () => {
                 </button>
             </div>
         </div>
-        <div class="flex flex-col gap-5 text-xl px-10 pb-6" v-show="openAccordions.get(timer.intervals[index].datetime)" >
-            <div class="flex justify-between items-center">
-                Warning
-                <div class="flex items-center gap-3">
-                    <select :value="props.timer.intervals[index].warning" @input="updateInterval($event, 'warning', index)">
-                        <option v-for="sound in sounds">
-                            {{ sound[0] }}
-                        </option>
-                    </select>
-                    <button @click="playSound(props.timer.intervals[index].warning)">
-                        <Sound class="w-6 h-6 fill-black" />
+        <Collapse :when="openAccordions.get(timer.intervals[index].datetime) || false">
+            <div class="flex flex-col gap-5 text-xl px-10 pb-6">
+                <div class="flex justify-between items-center">
+                    Warning
+                    <div class="flex items-center gap-3">
+                        <select 
+                            class="bg-stone-100" 
+                            :value="props.timer.intervals[index].warning" 
+                            @input="updateInterval($event, 'warning', index)"
+                        >
+                            <option class="bg-stone-100" v-for="sound in sounds">
+                                {{ sound[0] }}
+                            </option>
+                        </select>
+                        <button @click="playSound(props.timer.intervals[index].warning)">
+                            <Sound class="w-6 h-6 fill-black" />
+                        </button>
+                    </div> 
+                </div>
+                <div class="flex justify-between items-center">
+                    Warning Time 
+                    <input 
+                        class="w-20 text-right bg-stone-100"
+                        :value="formatTime(props.timer.intervals[index].warningTime)" 
+                        @change="updateInterval($event, 'warningTime', index)" 
+                    />
+                </div>
+                <div class="flex justify-between items-center">
+                    Sound
+                    <div class="flex items-center gap-3">
+                        <select 
+                            class="bg-stone-100"
+                            :value="props.timer.intervals[index].sound" 
+                            @input="updateInterval($event, 'sound', index)"
+                        >
+                            <option class="bg-stone-100" v-for="sound in sounds">
+                                {{ sound[0] }}
+                            </option>
+                        </select>
+                        <button @click="playSound(props.timer.intervals[index].sound)">
+                            <Sound class="w-6 h-6 fill-black" />
+                        </button>
+                    </div>
+                </div>
+                <div class="flex justify-between items-center">
+                    Repeat
+                    <button @click="updateInterval($event, 'repeat', index)">
+                        <CheckBoxBlank class="w-6 h-6 fill-black" v-if="!props.timer.intervals[index].repeat" />
+                        <CheckBoxChecked class="w-6 h-6 fill-black" v-else />
                     </button>
-                </div> 
-            </div>
-            <div class="flex justify-between items-center">
-                Warning Time 
-                <input 
-                    class="w-20 text-right bg-stone-100"
-                    :value="formatTime(props.timer.intervals[index].warningTime)" 
-                    @change="updateInterval($event, 'warningTime', index)" 
-                />
-            </div>
-            <div class="flex justify-between items-center">
-                Sound
-                <div class="flex items-center gap-3">
-                    <select :value="props.timer.intervals[index].sound" @input="updateInterval($event, 'sound', index)">
-                        <option v-for="sound in sounds">
-                            {{ sound[0] }}
-                        </option>
-                    </select>
-                    <button @click="playSound(props.timer.intervals[index].sound)">
-                        <Sound class="w-6 h-6 fill-black" />
+                </div>
+                <div class="flex justify-between items-center">
+                    Delete Interval
+                    <button @click="deleteInterval(index)">
+                        <Trash class="w-6 h-6 fill-black" />
                     </button>
                 </div>
             </div>
-            <div class="flex justify-between items-center">
-                Repeat
-                <button @click="updateInterval($event, 'repeat', index)">
-                    <CheckBoxBlank class="w-6 h-6 fill-black" v-if="!props.timer.intervals[index].repeat" />
-                    <CheckBoxChecked class="w-6 h-6 fill-black" v-else />
-                </button>
-            </div>
-            <div class="flex justify-between items-center">
-                Delete Interval
-                <button @click="deleteInterval(index)">
-                    <Trash class="w-6 h-6 fill-black" />
-                </button>
-            </div>
-        </div>
+        </Collapse> 
     </div>
 </template>
