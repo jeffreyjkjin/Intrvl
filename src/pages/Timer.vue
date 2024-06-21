@@ -6,6 +6,7 @@ import { VueDraggable } from 'vue-draggable-plus'
 import { RouteLocationNormalizedLoaded, Router, useRoute, useRouter } from 'vue-router'
 
 import AddButton from '../components/AddButton.vue'
+import ErrorToast from '../components/ErrorToast.vue'
 import IntervalAccordion from '../components/IntervalAccordion.vue'
 import PageHeader from '../components/PageHeader.vue'
 import { db, Interval, Timer } from '../utilities/db'
@@ -16,6 +17,8 @@ import getTotalTime from '../utilities/getTotalTime'
 const route: RouteLocationNormalizedLoaded = useRoute();
 const router: Router = useRouter();
 const timer = ref<Timer>();
+
+const toast = ref<any>(null);
 
 const openAccordions = ref<Map<number, boolean>>(new Map<number, boolean>());
 
@@ -32,8 +35,15 @@ const updateTimer = (event: Event, fieldName: string) => {
         field = { name: target.value }
     }
     else if (fieldName === 'rounds') {
-        timer.value.rounds = Number(target.value);
-        field = { rounds: Number(target.value) }
+        const num: number = Number(target.value);
+
+        // if round number is invalid
+        if (Number.isNaN(num)) {
+            (toast.value as any).addToast('The provided number of rounds is not a valid number.');
+        }
+
+        timer.value.rounds = !Number.isNaN(num) ? num : 1;
+        field = { rounds: !Number.isNaN(num) ? num : 1 }
     }
     else {
         return;
@@ -49,14 +59,14 @@ const updateTimer = (event: Event, fieldName: string) => {
 
             document.title = `Timer - ${timer.value.name}`;
         })
-        .catch((err: any) => console.error(err));
+        .catch(() => (toast.value as any).addToast('This timer could not be updated.'));
 }
 
 // deletes timer from db
 const deleteTimer = () => {
     db.timers.delete(Number(route.params.datetime))
         .then(() => router.push('/'))
-        .catch((err: any) => console.error(err));
+        .catch(() => (toast.value as any).addToast('This timer could not be deleted.'));
 }
 
 // creates a new empty interval and adds it to intervals array of timer in db 
@@ -81,7 +91,7 @@ const createInterval = () => {
         Number(route.params.datetime),
         { intervals: toRaw(timer.value.intervals) }
     )
-        .catch((err: any) => console.error(err));
+        .catch(() => (toast.value as any).addToast('A new interval could not be added to this timer.'));
 }
 
 // updates order of intervals for timer
@@ -92,7 +102,7 @@ const moveInterval = () => {
         Number(route.params.datetime),
         { intervals: timer.value.intervals.map((int: Interval) => toRaw(int)) }
     )
-        .catch((err: any) => console.error(err));    
+        .catch(() => (toast.value as any).addToast('The interval could not be moved.'));    
 }
 
 // grab timer from db with datetime param
@@ -114,6 +124,7 @@ onBeforeMount(() => {
 </script>
 
 <template>
+    <ErrorToast ref="toast" />
     <PageHeader />
     <div v-if="timer !== undefined" class="font-roboto">
         <div class="flex justify-between items-center p-4">
@@ -121,14 +132,14 @@ onBeforeMount(() => {
                 <input 
                     class="w-80"
                     :value="timer.name" 
-                    @input="updateTimer($event, 'name')" 
+                    @change="updateTimer($event, 'name')" 
                 />
             </div>
             <RouterLink :to="'/start/' + route.params.datetime">
                 <PlayCircle class="w-8 h-8 fill-black" />
             </RouterLink>
         </div>
-        <div class="flex flex-col text-xl px-12">
+        <div class="flex flex-col text-xl px-12 gap-3">
             <div class="flex justify-between">
                 Total Time 
                 <p class="opacity-25">
@@ -137,7 +148,7 @@ onBeforeMount(() => {
             </div>
             <div class="flex justify-between">
                 Rounds 
-                <input class="w-20 text-end" :value="timer.rounds" @input="updateTimer($event, 'rounds')" />
+                <input class="w-20 text-end" :value="timer.rounds" @change="updateTimer($event, 'rounds')" />
             </div>
             <div class="flex justify-between">
                 Delete Timer
