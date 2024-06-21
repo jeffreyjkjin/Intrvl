@@ -6,11 +6,12 @@ import ChevronUp from '../icons/chevronup.svg'
 import Drag from '../icons/drag.svg'
 import Sound from '../icons/sound.svg'
 import Trash from '../icons/trash.svg'
-import { toRaw } from 'vue'
+import { ref, toRaw } from 'vue'
 import { Collapse } from 'vue-collapsed'
 import { VSwatches } from 'vue3-swatches'
 import 'vue3-swatches/dist/style.css'
 
+import ErrorToast from '../components/ErrorToast.vue'
 import { db, Interval, Timer } from '../utilities/db'
 import formatTime from '../utilities/formatTime'
 import playSound from '../utilities/playSound'
@@ -41,6 +42,8 @@ const swatches: string[] = [
 	'#ec4899'
 ];
 
+const toast = ref<any>(null);
+
 // updates interval field
 const updateInterval = (event: Event, fieldName: string, index: number) => {
     const int: Interval = props.timer.intervals[index];
@@ -56,19 +59,26 @@ const updateInterval = (event: Event, fieldName: string, index: number) => {
         case 'length':
             if (!/^\d*(:\d*)?$/g.test((event.target as HTMLTextAreaElement).value)) {
                 // invalid input
-                int.length = 0;
+                int.length = 1;
+                
+                (toast.value as any).addToast('The provided length for the interval is invalid.');
             }
             else if ((event.target as HTMLTextAreaElement).value.includes(':')) {
                 // minutes and seconds
                 let time: number = 0;
                 time += Number((event.target as HTMLTextAreaElement).value.match(/.*?(?=:)/)) * 60;
                 time += Number((event.target as HTMLTextAreaElement).value.match(/(?<=:).*/));
-
-                int.length = time;
+                
+                int.length = time ? time : 1;
+                
+                if (!time) (toast.value as any).addToast('The length for the interval cannot be zero.');
             }
             else {
                 // only seconds
-                int.length = Number((event.target as HTMLTextAreaElement).value);
+                const time: number = Number((event.target as HTMLTextAreaElement).value);
+                int.length = time ? time : 1;
+
+                if (!time) (toast.value as any).addToast('The length for the interval cannot be zero.');
             }
             break;
         case 'warning':
@@ -78,6 +88,8 @@ const updateInterval = (event: Event, fieldName: string, index: number) => {
             if (!/^\d*(:\d*)?$/g.test((event.target as HTMLTextAreaElement).value)) {
                 // invalid input
                 int.warningTime = 0;
+
+                (toast.value as any).addToast('The provided time for the warning is invalid.');
             }
             else if ((event.target as HTMLTextAreaElement).value.includes(':')) {
                 // minutes and seconds
@@ -96,7 +108,7 @@ const updateInterval = (event: Event, fieldName: string, index: number) => {
             int.sound = toRaw((event.target as HTMLSelectElement).value);
             break;
         case 'repeat':
-            int.repeat = !props.timer.intervals[index].repeat;
+            int.repeat = !int.repeat;
     }
 
     // update interval for timer in db
@@ -104,7 +116,7 @@ const updateInterval = (event: Event, fieldName: string, index: number) => {
         Number(props.timer.datetime),
         { intervals: props.timer.intervals.map((int: Interval) => toRaw(int)) }
     )
-        .catch((err: any) => console.error(err));
+        .catch(() => (toast.value as any).addToast('This interval could not be updated.'));
 }
 
 // deletes interval from timer
@@ -116,7 +128,7 @@ const deleteInterval = (index: number) => {
         Number(props.timer.datetime),
         { intervals: toRaw(props.timer.intervals) }
     )
-        .catch((err: any) => console.error(err));
+        .catch(() => (toast.value as any).addToast('This interval could not be deleted.'));
 }
 
 // inverts openAccordion entry for the current interval 
@@ -128,6 +140,7 @@ const toggleAccordion = () => {
 </script>
 
 <template>
+    <ErrorToast ref="toast" />
     <div class="font-roboto bg-stone-100 m-4 rounded-2xl">
         <div class="flex px-3 py-4 justify-between">
             <div class="flex items-center gap-1">
