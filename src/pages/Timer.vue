@@ -42,8 +42,11 @@ const updateTimer = (event: Event, fieldName: string) => {
             (toast.value as any).addToast('The provided number of rounds is not a valid number.');
         }
 
-        timer.value.rounds = !Number.isNaN(num) ? num : 1;
-        field = { rounds: !Number.isNaN(num) ? num : 1 }
+        // if rounds is zero
+        if (!num) (toast.value as any).addToast('The provided number of rounds is cannot be zero.')
+
+        timer.value.rounds = !Number.isNaN(num) && num ? num : 1;
+        field = { rounds: !Number.isNaN(num) && num ? num : 1 }
     }
     else {
         return;
@@ -102,7 +105,7 @@ const moveInterval = () => {
         Number(route.params.datetime),
         { intervals: timer.value.intervals.map((int: Interval) => toRaw(int)) }
     )
-        .catch(() => (toast.value as any).addToast('The interval could not be moved.'));    
+        .catch(() => (toast.value as any).addToast('This interval could not be moved.'));    
 }
 
 // grab timer from db with datetime param
