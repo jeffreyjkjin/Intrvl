@@ -68,7 +68,7 @@ const updateTimer = (event: Event, fieldName: string) => {
 // deletes timer from db
 const deleteTimer = () => {
     db.timers.delete(Number(route.params.datetime))
-        .then(() => router.push('/'))
+        .then(() => router.push('/home'))
         .catch(() => (toast.value as any).addToast('This timer could not be deleted.'));
 }
 
@@ -108,6 +108,14 @@ const moveInterval = () => {
         .catch(() => (toast.value as any).addToast('This interval could not be moved.'));    
 }
 
+// sends user to timer start page
+const startTimer = () => {
+    if (!timer.value) return;
+
+    if (timer.value.intervals.length) router.push(`/start/${timer.value.datetime}`);
+    else (toast.value as any).addToast('Cannot start a timer with no intervals.')
+}
+
 // grab timer from db with datetime param
 onBeforeMount(() => {
     getTimer(Number(route.params.datetime))
@@ -138,9 +146,9 @@ onBeforeMount(() => {
                     @change="updateTimer($event, 'name')" 
                 />
             </div>
-            <RouterLink :to="'/start/' + route.params.datetime">
+            <button @click="startTimer">
                 <PlayCircle class="w-8 h-8 fill-black" />
-            </RouterLink>
+            </button>
         </div>
         <div class="flex flex-col text-xl px-12 gap-3">
             <div class="flex justify-between">
@@ -162,6 +170,7 @@ onBeforeMount(() => {
         </div>
         <div class="pb-20">
             <VueDraggable
+                v-if="timer.intervals.length"
                 v-model="timer.intervals"
                 :onUpdate="moveInterval"
             >
@@ -169,6 +178,12 @@ onBeforeMount(() => {
                     <IntervalAccordion :timer="timer" :index="index-1" :openAccordions="openAccordions" />
                 </div>
             </VueDraggable>
+            <div class="m-4 text-xl text-justify" v-else>
+                This timer currently does not have any intervals.
+                <div class="text-blue-400 inline" @click="createInterval">
+                    Click here to create a new interval.
+                </div>
+            </div>
         </div>
         <AddButton @click="createInterval" />
     </div>
