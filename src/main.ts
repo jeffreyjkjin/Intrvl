@@ -5,11 +5,13 @@ import './style.css'
 import App from './App.vue'
 import Error from './pages/Error.vue'
 import Home from './pages/Home.vue'
+import Landing from './pages/Landing.vue'
 import Start from './pages/Start.vue'
 import Timer from './pages/Timer.vue'
 
 const routes: any[] = [
-    { path: '/', component: Home },
+    { path: '/', component: Landing },
+    { path: '/home', component: Home },
     { path: '/timer/:datetime', component: Timer },
     { path: '/start/:datetime', component: Start },
     { path: '/:pathMatch(.*)*', component: Error }
