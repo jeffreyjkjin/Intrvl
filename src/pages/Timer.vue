@@ -31,8 +31,16 @@ const updateTimer = (event: Event, fieldName: string) => {
     
     // select field to update
     if (fieldName === 'name') {
-        timer.value.name = target.value;
-        field = { name: target.value }
+        let name: string = target.value;
+        
+        // if name is too long
+        if (name.length > 128) {
+            name = name.slice(0, 128);
+            (toast.value as any).addToast('The name of the timer cannot be longer than 128 characters.');
+        }
+
+        timer.value.name = name;
+        field = { name: name }
     }
     else if (fieldName === 'rounds') {
         const num: number = Number(target.value);
@@ -45,8 +53,11 @@ const updateTimer = (event: Event, fieldName: string) => {
         // if rounds is zero
         if (!num) (toast.value as any).addToast('The provided number of rounds is cannot be zero.')
 
-        timer.value.rounds = !Number.isNaN(num) && num ? num : 1;
-        field = { rounds: !Number.isNaN(num) && num ? num : 1 }
+        // if rounds is negative
+        if (num < 0) (toast.value as any).addToast('The provided number of rounds is cannot be negative.')
+
+        timer.value.rounds = !Number.isNaN(num) && num > 0 ? num : 1;
+        field = { rounds: !Number.isNaN(num) && num > 0 ? num : 1 }
     }
     else {
         return;
