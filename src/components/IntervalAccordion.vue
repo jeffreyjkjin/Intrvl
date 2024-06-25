@@ -23,6 +23,7 @@ const props = defineProps<{
     openAccordions: Map<number, boolean>
 }>();
 
+// colours for interval
 const swatches: string[] = [
 	'#ef4444',
 	'#f97316',
@@ -51,7 +52,16 @@ const updateInterval = (event: Event, fieldName: string, index: number) => {
     // update interval locally
     switch (fieldName) {
         case 'name':
-            int.name = (event.target as HTMLTextAreaElement).value;                
+            const name: string = (event.target as HTMLTextAreaElement).value;
+
+            // check if name is too long
+            if (name.length > 128) {
+                int.name = name.slice(0, 128);
+                (toast.value as any).addToast('The name of an interval cannot be longer than 128 characters.');
+            }
+            else {
+                int.name = name;
+            }
             break;
         case 'colour':
             int.colour = event as any;
