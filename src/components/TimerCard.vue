@@ -26,7 +26,7 @@ onBeforeMount(() => {
 </script>
 
 <template>
-    <div class="flex justify-between text-xl relative font-roboto bg-stone-100 m-4 px-3 py-4 rounded-2xl">
+    <div class="flex justify-between text-xl relative font-roboto bg-stone-100 px-3 py-4 rounded-2xl m-4 md:mx-auto md:w-[720px]">
         <div class="absolute w-6 h-full left-0 top-1/2 -translate-y-1/2 rounded-l-2xl" :style="{ backgroundColor: timerColour }">
             &nbsp
         </div>
