@@ -54,11 +54,11 @@ onBeforeMount(() => document.title = 'Home');
                 <TimerCard :timer="timer" />
             </div>
         </div>
-        <div class="m-4 text-xl" v-else>
+        <div class="text-xl m-4 md:mx-auto md:w-[720px] md:text-center" v-else>
             There are currently no timers.
-            <p class="text-blue-400 inline" @click="createTimer">
+            <a class="text-blue-400 inline" href="#create-timer" @click="createTimer">
                 Click here to create a new timer.
-            </p>
+            </a>
         </div>
     </div>
     <AddButton @click="createTimer" />
