@@ -149,7 +149,7 @@ onBeforeMount(() => {
     <ErrorToast ref="toast" />
     <PageHeader />
     <div v-if="timer !== undefined" class="font-roboto">
-        <div class="flex justify-between items-center p-4">
+        <div class="flex justify-between items-center p-4 md:px-0 md:mx-auto md:w-[720px]">
             <div class="font-bold text-3xl">
                 <input 
                     class="w-80"
@@ -161,7 +161,7 @@ onBeforeMount(() => {
                 <PlayCircle class="w-8 h-8 fill-black" />
             </button>
         </div>
-        <div class="flex flex-col text-xl px-12 gap-3">
+        <div class="flex flex-col text-xl gap-3 px-12 md:px-0 md:mx-auto md:w-[720px]">
             <div class="flex justify-between">
                 Total Time 
                 <p class="opacity-25">
