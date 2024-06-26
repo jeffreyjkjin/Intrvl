@@ -9,7 +9,7 @@ export const sounds = new Map<string, HTMLAudioElement>([
     ['Ding', new Audio('/sounds/ding.wav')],
     ['Double Ding', new Audio('/sounds/ding-ding.wav')],
     ['Mario Coin', new Audio('/sounds/mario-coin.wav')],
-    ['Ring Tone', new Audio('/sounds/ring.wav')],
+    ['Ring Tone', new Audio('/sounds/ringtone.wav')],
     ['School Bell', new Audio('/sounds/school-bell.wav')],
     ['Sonic Ring', new Audio('/sounds/sonic-ring.wav')],
     ['Tap', new Audio('/sounds/tap.wav')],
