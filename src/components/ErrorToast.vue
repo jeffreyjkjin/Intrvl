@@ -54,7 +54,7 @@ watch(toasts.value, () => {
 <template>
     <div class="w-full absolute top-4 overflow-hidden" v-if="toasts.length">
         <div 
-            class="bg-red-600 font-roboto text-white text-xl m-3 px-3 py-4 rounded-2xl"
+            class="bg-red-600 font-roboto text-white text-xl px-3 py-4 rounded-2xl m-3 md:mx-auto md:w-[480px]"
             :class="{ 'newToast': toastTime <= 500, 'removeToast': toastTime >= 5000 }"
             @click="toastTime = 5000"    
         >
