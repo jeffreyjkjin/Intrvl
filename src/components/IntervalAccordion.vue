@@ -151,7 +151,7 @@ const toggleAccordion = () => {
 
 <template>
     <ErrorToast ref="toast" />
-    <div class="font-roboto bg-stone-100 m-4 rounded-2xl">
+    <div class="font-roboto bg-stone-100 rounded-2xl m-4 md:mx-auto md:w-[720px]">
         <div class="flex px-3 py-4 justify-between">
             <div class="flex items-center gap-1">
                 <Drag class="w-6 h-6 fill-black" />
