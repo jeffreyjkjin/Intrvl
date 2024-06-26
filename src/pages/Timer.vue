@@ -189,7 +189,7 @@ onBeforeMount(() => {
                     <IntervalAccordion :timer="timer" :index="index-1" :openAccordions="openAccordions" />
                 </div>
             </VueDraggable>
-            <div class="m-4 text-xl text-justify" v-else>
+            <div class="text-xl text-justify m-4 md:mx-auto md:w-[720px]" v-else>
                 This timer currently does not have any intervals.
                 <div class="text-blue-400 inline" @click="createInterval">
                     Click here to create a new interval.
