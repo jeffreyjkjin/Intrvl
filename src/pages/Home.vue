@@ -7,7 +7,6 @@ import ErrorToast from '../components/ErrorToast.vue'
 import PageHeader from '../components/PageHeader.vue'
 import TimerCard from '../components/TimerCard.vue'
 import { db, Timer } from '../utilities/db'
-import getTotalTime from '../utilities/getTotalTime'
 
 const router: Router = useRouter();
 const timers = ref<Timer[]>([]);
