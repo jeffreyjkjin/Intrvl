@@ -45,16 +45,18 @@ const updateTimer = (event: Event, fieldName: string) => {
     else if (fieldName === 'rounds') {
         const num: number = Number(target.value);
 
-        // if round number is invalid
         if (Number.isNaN(num)) {
+            // if round number is invalid
             (toast.value as any).addToast('The provided number of rounds is not a valid number.');
         }
-
-        // if rounds is zero
-        if (!num) (toast.value as any).addToast('The provided number of rounds is cannot be zero.')
-
-        // if rounds is negative
-        if (num < 0) (toast.value as any).addToast('The provided number of rounds is cannot be negative.')
+        else if (!num) {
+            // if rounds is zero
+            (toast.value as any).addToast('The provided number of rounds is cannot be zero.');
+        }
+        else if (num < 0) {
+            // if rounds is negative
+            (toast.value as any).addToast('The provided number of rounds is cannot be negative.');
+        }
 
         timer.value.rounds = !Number.isNaN(num) && num > 0 ? num : 1;
         field = { rounds: !Number.isNaN(num) && num > 0 ? num : 1 }
