@@ -214,7 +214,7 @@ watch(roundTime, () => {
     <div 
         v-if="timer !== undefined" 
         :style="{ backgroundColor: timerColour }" 
-        class="min-w-screen min-h-screen font-roboto font-bold text-white relative"
+        class="min-w-dvh min-h-dvh font-roboto font-bold text-white relative"
     >
         <div class="w-full relative">
             <RouterLink class="absolute top-3 left-3" :to="'/timer/' + timer.datetime">
