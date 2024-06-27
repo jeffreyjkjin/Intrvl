@@ -136,7 +136,7 @@ const deleteInterval = (index: number) => {
     // remove interval from timer in db
     db.timers.update(
         Number(props.timer.datetime),
-        { intervals: toRaw(props.timer.intervals) }
+        { intervals: props.timer.intervals.map((int: Interval) => toRaw(int)) }
     )
         .catch(() => (toast.value as any).addToast('This interval could not be deleted.'));
 }
