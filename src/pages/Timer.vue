@@ -105,7 +105,7 @@ const createInterval = () => {
 
     db.timers.update(
         Number(route.params.datetime),
-        { intervals: toRaw(timer.value.intervals) }
+        { intervals: timer.value.intervals.map((int: Interval) => toRaw(int)) }
     )
         .catch(() => (toast.value as any).addToast('A new interval could not be added to this timer.'));
 }
@@ -187,7 +187,11 @@ onBeforeMount(() => {
                 v-model="timer.intervals"
                 :onUpdate="moveInterval"
             >
-                <div class="flex flex-col" v-for="index in timer.intervals.length">
+                <div 
+                    class="flex flex-col" 
+                    v-for="index in timer.intervals.length" 
+                    :key="timer.intervals[index-1].datetime"
+                >
                     <IntervalAccordion :timer="timer" :index="index-1" :openAccordions="openAccordions" />
                 </div>
             </VueDraggable>
