@@ -37,14 +37,14 @@ const timerStarted = ref<boolean>(false);
 const timerColour = ref<string>('');
 
 
-// calculates total time of timer based on number of rounds remaining
-const getTotalTime = (rounds: number): number => {
+// calculates total time of timer based on the current round number
+const getCurrentTime = (rounds: number): number => {
     if (!timer.value) return 0;
 
     const intervals: Interval[] = timer.value.intervals; 
     let time: number = 0;
 
-    for (let i = 0; i < rounds; i++) {
+    for (let i = rounds; i < totalRounds.value; i++) {
         const int: Interval = intervals[i % numIntervals.value];
 
         // only count interval time if is the first round or repeat is enabled
@@ -119,7 +119,7 @@ const startTimer = () => {
     // set up timer
     currentRound.value = 0;
     ms.value = 0;
-    remainingTime.value = getTotalTime(totalRounds.value);
+    remainingTime.value = getCurrentTime(0);
     roundTime.value = timer.value.intervals[0].length;
 
     timerStarted.value = true;
@@ -144,7 +144,7 @@ const rewind = () => {
         currentRound.value--;
     } while (currentRound.value >= numIntervals.value && !intervals[currentRound.value % numIntervals.value].repeat);  
 
-    remainingTime.value = getTotalTime(totalRounds.value - currentRound.value);
+    remainingTime.value = getCurrentTime(currentRound.value);
     roundTime.value = intervals[currentRound.value % numIntervals.value].length;
 }
 
@@ -163,7 +163,7 @@ const forward = () => {
         currentRound.value++;
     } while (currentRound.value >= numIntervals.value && !intervals[currentRound.value % numIntervals.value].repeat);
     
-    remainingTime.value = getTotalTime(totalRounds.value - currentRound.value);
+    remainingTime.value = getCurrentTime(currentRound.value);
     roundTime.value = intervals[currentRound.value % numIntervals.value].length;
 }
 
@@ -184,7 +184,7 @@ onBeforeMount(() => {
             // initialize timer values
             currentRound.value = 0;
             ms.value = 0;
-            remainingTime.value = getTotalTime(totalRounds.value);
+            remainingTime.value = getCurrentTime(0);
             roundTime.value = timer.value.intervals[0].length;
 
             // set initial colour
