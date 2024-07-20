@@ -116,11 +116,13 @@ const runInterval = () => {
 const startTimer = () => {
     if (!timer.value) return;
 
-    // set up timer
-    currentRound.value = 0;
-    ms.value = 0;
-    remainingTime.value = getCurrentTime(0);
-    roundTime.value = timer.value.intervals[0].length;
+    if (!currentRound.value || !remainingTime.value) {
+        // set up timer if on first run or timer ended
+        currentRound.value = 0;
+        ms.value = 0;
+        remainingTime.value = getCurrentTime(0);
+        roundTime.value = timer.value.intervals[0].length;
+    }
 
     timerStarted.value = true;
 
@@ -133,16 +135,17 @@ const startTimer = () => {
 const rewind = () => {
     if (!timer.value) return;
 
-    // if current round is the first one
-    if (currentRound.value === 0) return;
-
     const intervals: Interval[] = timer.value.intervals;
-    playSound(intervals[currentRound.value % numIntervals.value].sound);
-
-    // find last interval with repeat on
-    do {
-        currentRound.value--;
-    } while (currentRound.value >= numIntervals.value && !intervals[currentRound.value % numIntervals.value].repeat);  
+    
+    // if current round is not the first one
+    if (currentRound.value > 0) {
+        playSound(intervals[currentRound.value % numIntervals.value].sound);
+    
+        // find last interval with repeat on
+        do {
+            currentRound.value--;
+        } while (currentRound.value >= numIntervals.value && !intervals[currentRound.value % numIntervals.value].repeat);  
+    }
 
     remainingTime.value = getCurrentTime(currentRound.value);
     roundTime.value = intervals[currentRound.value % numIntervals.value].length;
@@ -218,7 +221,7 @@ watch(roundTime, () => {
     >
         <div class="w-full relative">
             <RouterLink class="absolute top-3 left-3" :to="'/timer/' + timer.datetime">
-                <Close class="h-12 w-12 fill-white" />
+                <Close class="h-12 w-12 fill-white" @click="timerStarted = false" />
             </RouterLink>
             <div class="w-2/3 text-center text-3xl absolute top-4 left-1/2 -translate-x-1/2">
                 {{ timer.name }}
